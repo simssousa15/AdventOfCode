@@ -5,6 +5,87 @@
 
 using namespace std;
 
+vector<int> run(long long A, vector<int> prog){
+
+    vector<long long> reg = {A, 0, 0};
+    vector<int> out;
+
+    int idx = 0;
+    bool done = false;
+    do{
+        //check if any reg negative
+        for(auto i : reg){
+            if(i < 0){
+                cout << "NEGATIVE" << endl;
+            }
+        }
+
+        long long lit = prog[idx+1];
+        long long combo = lit;
+        if(combo > 3){
+            combo = reg[combo%4];
+        }
+
+        switch (prog[idx])
+        {
+        case 0:
+            reg[0] /= static_cast<long long>(std::pow(2,combo));
+            // reg[0] /= pow(2,combo);
+            break;
+        case 1:
+            reg[1] ^= lit;
+            break;
+        case 2:
+            reg[1] = combo%8;
+            break;
+        case 3:
+            if(reg[0] != 0){ idx = lit; idx-=2;}
+            break;
+        case 4:
+            reg[1] ^= reg[2];
+            break;
+        case 5:
+            out.push_back(combo%8);
+            break;
+        case 6:
+            reg[1] = reg[0] / static_cast<long long>(std::pow(2,combo));
+            // reg[1] = reg[0] / pow(2,combo);
+            break;
+        case 7:
+            reg[2] = reg[0] / static_cast<long long>(std::pow(2,combo));
+            // reg[2] = reg[0] / pow(2,combo);
+            break;
+        default:
+            cout << "command not recognized" << endl;
+            break;
+        }
+
+        idx+=2;
+    }while(idx < prog.size() && !done);
+
+    return out;
+}
+
+long long dfs(vector<int> prog, long long A){
+    vector<int> out;
+    A <<= 3;
+    for(int i = 0; i < 8; i++){
+        out = run(A+i, prog);
+        if(equal(prog.end()-out.size(), prog.end(), out.begin())){
+            //cout << "found: " << oct << A+i << endl;
+            if(out.size() == prog.size()){
+                return A+i;
+            }
+            
+            long long ans = dfs(prog, A+i);
+            if(ans != -1){
+                return ans;
+            }
+        }
+    }
+    return -1;
+}
+
 int main()
 {
 
@@ -44,74 +125,22 @@ int main()
     cout << endl;
 
 
-    long long a = 0;
-    while(true){
-
-        if(a % 10000000 == 0){cout << a << endl;}
-
-        reg[0] = a++;
-        int out_idx = 0;
-
-        int idx = 0;
-        bool done = false;
-        do{
-            int lit = prog[idx+1];
-            int combo = lit;
-            if(combo > 3){
-                combo = reg[combo%4];
-            }
-
-            switch (prog[idx])
-            {
-            case 0:
-                reg[0] /= pow(2, combo);
-                break;
-            case 1:
-                reg[1] ^= lit;
-                break;
-            case 2:
-                reg[1] = combo%8;
-                break;
-            case 3:
-                if(reg[0] != 0){ idx = lit; idx-=2;}
-                break;
-            case 4:
-                reg[1] ^= reg[2];
-                break;
-            case 5:
-                if(out_idx >= prog.size()){
-                    cout << "Maybe ans: " << a-1 << endl;
-                    done = true;
-                }
-                else{
-                    if(prog[out_idx++] != combo%8){
-                        done = true;
-                    }
-                }
-                
-                break;
-            case 6:
-                reg[1] = reg[0] / pow(2, combo);
-                break;
-            case 7:
-                reg[2] = reg[0] / pow(2, combo);
-                break;
-            default:
-                cout << "command not recognized" << endl;
-                break;
-            }
-
-            idx+=2;
-        }while(idx < prog.size() && !done);
-
-        if(!done && out_idx == prog.size()){
-            cout << "Ans: " << a - 1 << endl;
-            break; 
-        }
+    
+    vector<int> out = run(reg[0], prog);
+    for(int i = 0; i < out.size(); i++){
+        cout << out[i] << ",";
     }
+    cout << endl << endl ;
+
+    long long ans = dfs(prog, 0);
+    cout << "Ans: " << ans << endl;
 
     return 0;
 }
 
-// 720000000
-// 2147483647
+/*
+
+
+6562550454257155
+
+*/

@@ -50,7 +50,6 @@ def part1(input):
     print(f"Max connections: {MAX_CONNECTIONS}")
     
     circuit_mapping = [i for i in range(len(circ_lst))]
-    # circuit_ctr = {i: 1 for i in range(len(circ))}
 
     for _ in range(MAX_CONNECTIONS):
         #find closest boxes
@@ -101,7 +100,62 @@ def part1(input):
 
 def part2(input):
     
-    return "Part 2 result"
+    # Create List of Coordinates from input
+    circ_lst = []
+    for line in input.splitlines():
+        x, y, z = map(int, line.split(","))
+        circ_lst.append(JunctionBox(x, y, z))
+    
+    dist_matrix = [[0 for _ in range(len(circ_lst))] for _ in range(len(circ_lst))]
+    for i in range(len(circ_lst)):
+        for j in range(i+1, len(circ_lst)):
+            dist_matrix[i][j] = dist(circ_lst[i], circ_lst[j])
+            dist_matrix[j][i] = dist_matrix[i][j]
+    
+    
+    circuit_mapping = [i for i in range(len(circ_lst))]
+    ids = set(range(len(circ_lst)))
+    result = -1
+    total = len(ids)
+    while True:
+        progress = total - len(ids)
+        percent = progress / total
+        if(progress % 100 == 0):
+            print(f"{percent:.2%}")
+
+        #find closest boxes
+        min_dist = float('inf')
+        i_min, j_min = -1, -1
+        for i in range(len(circ_lst)):
+            for j in range(i+1, len(circ_lst)):
+                if dist_matrix[i][j] < min_dist and dist_matrix[i][j] != 0:
+                    min_dist = dist_matrix[i][j]
+                    i_min, j_min = i, j
+
+        if(i_min==-1 and j_min==-1 and min_dist==float('inf')):
+            break
+
+        i, j = i_min, j_min
+        # print(f"{i} <-> {j} : {dist_matrix[i][j]}")
+        dist_matrix[i][j] = 0
+        dist_matrix[j][i] = 0
+        
+        # merge circuits
+        circuit_to_keep = circuit_mapping[i]
+        circuit_to_replace = circuit_mapping[j]
+        # might be the case they were already merged
+        if(circuit_to_keep != circuit_to_replace):
+            ids.discard(circuit_to_replace)
+            result = circ_lst[i].x * circ_lst[j].x
+            for idx in range(len(circuit_mapping)):
+                if circuit_mapping[idx] == circuit_to_replace:
+                    circuit_mapping[idx] = circuit_to_keep
+        
+        # print(len(ids))
+        if(len(ids) == 1):
+            break
+
+    return result
 
 if part == "1":
     print(part1(input))

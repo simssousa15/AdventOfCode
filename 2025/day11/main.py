@@ -101,6 +101,8 @@ def part2(input):
     class Search:
         def __init__(self, init_pos="svr"):
             self.q = [State2(init_pos)]
+            # exclusive ctrs
+            # dac_ctr includes paths with dac and only dac found
             self.both_ctr = 0
             self.dac_ctr = 0
             self.fft_ctr = 0
